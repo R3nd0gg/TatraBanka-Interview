@@ -1,0 +1,2 @@
+rootProject.name = "MasarykApp"
+include ':app'
