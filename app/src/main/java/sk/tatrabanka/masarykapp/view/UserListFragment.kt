@@ -8,22 +8,18 @@ import androidx.recyclerview.widget.RecyclerView
 import sk.tatrabanka.masarykapp.adapter.UserListAdapter
 import sk.tatrabanka.masarykapp.databinding.UserListFragmentBinding
 import sk.tatrabanka.masarykapp.viewmodel.UserListViewModel
-import kotlin.math.ceil
 
 class UserListFragment : BaseFragment<UserListViewModel, UserListFragmentBinding>() {
-    companion object {
-        const val FETCH_LIMIT = 10
-    }
-
-    private val recyclerViewAdapter = UserListAdapter().apply {
+    private val recyclerViewAdapter = UserListAdapter {
+        goToFragment(UserListFragmentDirections.actionUserListFragmentToUserDetailFragment(it.id))
+    }.apply {
         stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
     }
-    private var isLoading = false
+    private var isLoading = true
         set(value) {
             viewBinding.mainLayout.isRefreshing = value
             field = value
         }
-    private var lastLoadedPage = 1
     private var isExhausted = false
 
     override fun viewModelClass() = UserListViewModel::class.java
@@ -34,15 +30,16 @@ class UserListFragment : BaseFragment<UserListViewModel, UserListFragmentBinding
     override fun initView(savedInstanceState: Bundle?) {
         // swipe to refresh
         viewBinding.mainLayout.setOnRefreshListener {
-            lastLoadedPage = 1
-            viewModel.fetchUsersAndClearCache(lastLoadedPage, FETCH_LIMIT)
+            viewModel.clearCacheAndFetch()
         }
+        viewBinding.mainLayout.isRefreshing = true
         // recycler view
         val layoutManager = LinearLayoutManager(requireContext())
         viewBinding.recyclerView.adapter = recyclerViewAdapter
         viewBinding.recyclerView.layoutManager = layoutManager
         viewBinding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                // fetching more items when scrolling down
                 super.onScrolled(recyclerView, dx, dy)
                 if (dy <= 0 || isExhausted) {
                     // not scrolling down or don't have any new data
@@ -55,22 +52,20 @@ class UserListFragment : BaseFragment<UserListViewModel, UserListFragmentBinding
                 // new items have to be fetched
                 if (!isLoading && (visibleItemsCount + firstVisibleItem) >= totalItems) {
                     isLoading = true
-                    viewModel.fetchUsers(lastLoadedPage + 1, FETCH_LIMIT)
+                    viewModel.fetchNextPage()
                 }
             }
         })
         // init observers
         viewModel.usersObservable.observe(viewLifecycleOwner) {
-            lastLoadedPage = ceil(it.size / FETCH_LIMIT.toDouble()).toInt()
-            recyclerViewAdapter.userList = it
+            recyclerViewAdapter.setNewData(it)
             isLoading = false
         }
         viewModel.usersExhaustedObservable.observe(viewLifecycleOwner) {
             isExhausted = it
         }
-        // load first data
-        if (savedInstanceState == null) {
-            viewModel.fetchUsers(lastLoadedPage, FETCH_LIMIT)
-        }
+    }
+
+    override fun loadArgs(bundle: Bundle) {
     }
 }

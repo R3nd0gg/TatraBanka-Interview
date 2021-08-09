@@ -5,14 +5,14 @@ import sk.tatrabanka.masarykapp.repository.UsersRepository
 
 class UserListViewModel : ViewModel() {
     private val usersRepository = UsersRepository.instance
-    val usersObservable = usersRepository.usersObservable
     val usersExhaustedObservable = usersRepository.usersExhaustedObservable
+    val usersObservable = usersRepository.usersObservable
 
-    fun fetchUsers(page: Int, limit: Int) {
-        usersRepository.fetchUsers(page, limit)
+    fun clearCacheAndFetch() {
+        usersRepository.clearCacheAndFetch()
     }
 
-    fun fetchUsersAndClearCache(page: Int, limit: Int) {
-        usersRepository.fetchUsersAndClearCache(page, limit)
+    fun fetchNextPage() {
+        usersRepository.fetchNextPage()
     }
 }

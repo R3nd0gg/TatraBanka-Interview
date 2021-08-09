@@ -1,6 +1,7 @@
 package sk.tatrabanka.masarykapp.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
@@ -11,18 +12,13 @@ import sk.tatrabanka.masarykapp.databinding.UserListItemLayoutBinding
 import sk.tatrabanka.masarykapp.model.User
 
 
-class UserListAdapter : RecyclerView.Adapter<UserListAdapter.ViewHolder>() {
-    var userList: List<User> = listOf()
-        set(value) {
-            val diffCallback = UserDiffUtil(userList, value)
-            val diffResult = DiffUtil.calculateDiff(diffCallback)
-            field = value
-            diffResult.dispatchUpdatesTo(this)
-        }
+class UserListAdapter(private val onClickListener: View.OnClickListener) : RecyclerView.Adapter<UserListAdapter.ViewHolder>() {
+    private val userList: MutableList<User> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
-            UserListItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            UserListItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false),
+            onClickListener
         )
     }
 
@@ -32,10 +28,21 @@ class UserListAdapter : RecyclerView.Adapter<UserListAdapter.ViewHolder>() {
 
     override fun getItemCount() = userList.size
 
-    class ViewHolder(private val binding: UserListItemLayoutBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    fun setNewData(newUsers: List<User>) {
+        val diffCallback = UserDiffUtil(userList, newUsers)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        userList.clear()
+        userList.addAll(newUsers)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    class ViewHolder(
+        private val binding: UserListItemLayoutBinding,
+        private val onLineClickListener: View.OnClickListener
+    ) : RecyclerView.ViewHolder(binding.root) {
         fun insertUser(user: User) {
             binding.linesContainer.id = user.id
+            binding.linesContainer.setOnClickListener(onLineClickListener)
             binding.userName.text = "${user.firstName} ${user.lastName}"
             binding.userEmail.text = user.email
             Glide.with(binding.avatar)

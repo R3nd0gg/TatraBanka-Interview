@@ -8,12 +8,14 @@ import sk.tatrabanka.masarykapp.request.RestClient
 class UsersRepository private constructor() {
     companion object {
         val instance = UsersRepository()
+        const val FETCH_LIMIT = 10
     }
 
     private val fetchedUsersList = mutableListOf<User>()
+    private val restClient = RestClient.instance
+    private var nextPage = 1
     val usersObservable = MediatorLiveData<List<User>>()
     val usersExhaustedObservable = MutableLiveData(false)
-    private val restClient = RestClient.instance
 
     init {
         // initialize mediators
@@ -22,14 +24,20 @@ class UsersRepository private constructor() {
             usersObservable.postValue(fetchedUsersList)
             usersExhaustedObservable.postValue(it.isEmpty()) // fetching is exhausted when received list is empty
         }
+        // fetch first data
+        if (fetchedUsersList.isEmpty()) {
+            fetchNextPage()
+        }
     }
 
-    fun fetchUsers(page: Int, limit: Int) {
-        restClient.fetchUsers(page, limit)
+    fun fetchNextPage() {
+        restClient.fetchUsers(nextPage, FETCH_LIMIT)
+        nextPage++
     }
 
-    fun fetchUsersAndClearCache(page: Int, limit: Int) {
+    fun clearCacheAndFetch() {
+        nextPage = 1
         fetchedUsersList.clear()
-        fetchUsers(page, limit)
+        fetchNextPage()
     }
 }

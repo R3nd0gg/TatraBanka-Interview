@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="round_image_size">40dp</dimen>
+    <dimen name="round_image_size_bigger">80dp</dimen>
+    <dimen name="preferred_margin">16dp</dimen>
 </resources>
