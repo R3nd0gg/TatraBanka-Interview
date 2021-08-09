@@ -46,7 +46,7 @@ class RestClient private constructor() {
                     // parse response and post to livedata
                     val parsedResponse =
                         Gson().fromJson(response.body?.charStream(), UsersResponse::class.java)
-                    usersObservable.postValue(parsedResponse.data)
+                    usersObservable.postValue(parsedResponse.data.sortedBy { it.id })
                 }
             }
         })

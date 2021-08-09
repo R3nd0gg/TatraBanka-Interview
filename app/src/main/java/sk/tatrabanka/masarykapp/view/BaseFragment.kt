@@ -25,7 +25,7 @@ abstract class BaseFragment<TViewModel : ViewModel, TBinding : ViewBinding> : Fr
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initView()
+        initView(savedInstanceState)
     }
 
     override fun onDestroyView() {
@@ -37,5 +37,5 @@ abstract class BaseFragment<TViewModel : ViewModel, TBinding : ViewBinding> : Fr
 
     protected abstract fun initBinding(inflater: LayoutInflater, container: ViewGroup?): TBinding
 
-    protected abstract fun initView()
+    protected abstract fun initView(savedInstanceState: Bundle?)
 }

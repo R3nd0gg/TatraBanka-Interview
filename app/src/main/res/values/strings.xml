@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MasarykApp</string>
+    <string name="user_photo">User photo</string>
 </resources>

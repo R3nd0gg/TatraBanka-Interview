@@ -10,6 +10,7 @@ class UsersRepository private constructor() {
         val instance = UsersRepository()
     }
 
+    private val fetchedUsersList = mutableListOf<User>()
     val usersObservable = MediatorLiveData<List<User>>()
     val usersExhaustedObservable = MutableLiveData(false)
     private val restClient = RestClient.instance
@@ -17,15 +18,18 @@ class UsersRepository private constructor() {
     init {
         // initialize mediators
         this.usersObservable.addSource(restClient.usersObservable) {
-            if (it.isNotEmpty()) {
-                usersObservable.postValue(it)
-            }
-            // fetching is exhausted when received list is empty
-            usersExhaustedObservable.postValue(it.isEmpty())
+            fetchedUsersList.addAll(it)
+            usersObservable.postValue(fetchedUsersList)
+            usersExhaustedObservable.postValue(it.isEmpty()) // fetching is exhausted when received list is empty
         }
     }
 
     fun fetchUsers(page: Int, limit: Int) {
         restClient.fetchUsers(page, limit)
+    }
+
+    fun fetchUsersAndClearCache(page: Int, limit: Int) {
+        fetchedUsersList.clear()
+        fetchUsers(page, limit)
     }
 }
